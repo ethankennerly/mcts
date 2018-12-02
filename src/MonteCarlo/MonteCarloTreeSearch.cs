@@ -37,7 +37,8 @@ namespace MonteCarlo
 
             public Node<TPlayer, TAction> Parent { get; }
 
-            public IList<Node<TPlayer, TAction>> Children { get; } = new List<Node<TPlayer, TAction>>();
+            private readonly IList<Node<TPlayer, TAction>> m_Children = new List<Node<TPlayer, TAction>>();
+            public IList<Node<TPlayer, TAction>> Children { get { return m_Children; } }
 
             public int NumRuns { get; set; }
 
@@ -49,17 +50,15 @@ namespace MonteCarlo
 
             public TAction Action { get; }
 
-            public ISet<TAction> UntriedActions { get; }
+            public HashSet<TAction> UntriedActions { get; }
 
-            public IList<TAction> Actions => State.Actions;
+            public IList<TAction> Actions { get { return State.Actions; } }
 
-            private static double c = Math.Sqrt(2);
+            public double ExploitationValue { get { return NumWins / NumRuns; } }
 
-            public double ExploitationValue => NumWins / NumRuns;
+            public double ExplorationValue { get { return (Math.Sqrt(2*Math.Log(Parent.NumRuns) / NumRuns)); } }
 
-            public double ExplorationValue => (Math.Sqrt(2*Math.Log(Parent.NumRuns) / NumRuns));
-
-            private double UCT => ExploitationValue + ExplorationValue;
+            private double UCT { get { return ExploitationValue + ExplorationValue; } }
 
             public Node<TPlayer, TAction> SelectChild()
             {
@@ -115,7 +114,7 @@ namespace MonteCarlo
 
             public override string ToString()
             {
-                return $"{NumWins}/{NumRuns}: ({ExploitationValue}/{ExplorationValue}={UCT})";
+                return NumWins + " /" + NumRuns + " : (" + ExploitationValue + " / " + ExplorationValue + " = " + UCT + " )";
             }
         }
 
@@ -133,7 +132,7 @@ namespace MonteCarlo
         {
             var root = new Node<TPlayer, TAction>(state);
             root.BuildTree((numIterations, elapsedMs) => numIterations < maxIterations && elapsedMs < timeBudget);
-            return root.Children
+            return (IEnumerable<IMctsNode<TAction>>)root.Children
                 .OrderByDescending(n => n.NumRuns);
         }
     }
