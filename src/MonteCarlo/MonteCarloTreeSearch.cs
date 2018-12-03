@@ -132,8 +132,8 @@ namespace MonteCarlo
         {
             var root = new Node<TPlayer, TAction>(state);
             root.BuildTree((numIterations, elapsedMs) => numIterations < maxIterations && elapsedMs < timeBudget);
-            return (IEnumerable<IMctsNode<TAction>>)root.Children
-                .OrderByDescending(n => n.NumRuns);
+            var children = root.Children.OrderByDescending(n => n.NumRuns).ToList();
+            return (IEnumerable<IMctsNode<TAction>>)children;
         }
     }
 
